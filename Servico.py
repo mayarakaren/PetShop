@@ -32,7 +32,7 @@ window.geometry("%dx%d+%d+%d"%(largura, altura, posx, posy))
 #Título-----------------------------------------------------------------------------------------------------
 lbl_tit = Label(window, text="Gestão de Serviços", font=("Arial", 30, "bold"), bg="#ffffff").place(x=200, y=50)
 
-def salvar():
+def create():
     codigo = txt_codigo.get()
     nome = txt_nome.get()
     tipo = comboservico.get()
@@ -53,52 +53,47 @@ def salvar():
     else:
         conectar = mysql.connect(host= "localhost", user="root", password="", database="petshop")
         cursor = conectar.cursor()
-        cursor.execute("INSERT INTO Servico VALUES('" + variavel_cod + "', '" + variavel_nome + "', '" + variavel_telefone + "')")
+        cursor.execute("INSERT INTO Servico VALUES('" + codigo + "', '" + nome + "','" + tipo + "', '" + valor + "','" + tempo + "','" + desc + "')")
         cursor.execute("commit")
         MessageBox.showinfo("Mensagem", "Cadastro Realizado com sucesso!")
         conectar.close()
 
-def excluir():
+def delete():
     if(txt_codigo.get() == ""):
         MessageBox.showinfo("ALERT", "Digite o código para deletar")
     else:
-        conectar = mysql.connect(host="localhost", user="root", password="", database="exemplo")
+        conectar = mysql.connect(host="localhost", user="root", password="", database="petshop")
         cursor = conectar.cursor()
-        cursor.execute("DELETE FROM teste WHERE cod='"+ txt_codigo.get() +"'")
+        cursor.execute("DELETE FROM Servico WHERE cod='"+ txt_codigo.get() +"'")
         cursor.execute("commit")
         MessageBox.showinfo("Mensagem", "Informação Excluída com Sucesso!")
         conectar.close()
 
-def atualizar():
-    id = txt_codigo.get()
-    name = txt_nome.get()
-    phone = txt_telefone.get()
+def update():
+    codigo = txt_codigo.get()
+    nome = txt_nome.get()
+    tipo = comboservico.get()
+    valor = txt_valor.get()
+    tempo = txt_tempo.get()
+    desc = text_area.get("1.0", END)
 
-    if(name == "" or phone == ""):
+    txt_codigo.delete(0, tk.END)
+    txt_nome.delete(0, tk.END)
+    comboservico.set("")
+    txt_valor.delete(0, tk.END)
+    txt_tempo.delete(0, tk.END)
+    text_area.delete('1.0', tk.END)
+
+    if(codigo == "" or nome == "" or tipo == "" or valor == "" or tempo == "" or desc == ""):
         MessageBox.shoinfo("ALERT", "Digite todos os campos para realizar alteração")
     else:
-        conectar = mysql.connect(host="localhost", user="root", password="", database="exemplo")
+        conectar = mysql.connect(host="localhost", user="root", password="", database="petshop")
         cursor = conectar.cursor()
-        cursor.execute("UPDATE teste SET nome = '"+ txt_nome.get() + "', telefone = '" + txt_telefone.get() + "' WHERE cod='"+ txt_codigo.get() + "'")
+        cursor.execute("UPDATE Servico SET nome = '"+ nome + "', tipo = '" + tipo + "', valor = '" + valor + "', tempo = '" + tempo + "', descricao = '" + desc + "' WHERE codigo='"+ codigo + "'")
         cursor.execute("commit")
 
     MessageBox.showinfo("Status", "Atualização feita com sucessão!")
     conectar.close()
-
-def Select():
-    if(txt_codigo.get() == ""):
-        MessageBox.showinfo("ALERT", "Por favor Digite o Código")
-    else:
-        conectar = mysql.connect(host="localhost", user="root", password="", database="exemplo")
-        cursor = conectar.cursor()
-        cursor.execute("SELECT * FROM teste WHERE cod= '"+ txt_codigo.get() + "'")
-        rows = cursor.fetchall()
-
-        for row in rows:
-            txt_nome.insert(0, row[1])
-            txt_telefone.insert(0, row[2])
-
-        conectar.close()
 
 def abrir_consultaServico():
     subprocess.run(["python", "ConsultarServico.py"])
@@ -180,7 +175,7 @@ def escolher_imagem():
 
         # Converter a imagem para bytes
         stream = BytesIO()
-        imagem_pil.save(stream, format="PNG")
+        imagem_pil.save(stream, format="JPEG")
         imagem_bytes = stream.getvalue()
 
         # Inserir a imagem na tabela do banco de dados
