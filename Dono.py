@@ -230,6 +230,45 @@ def btn_rotacao_click():
     imagem_pil_rotacionada = rotacionar_imagem(imagem_original, angulo=180)
     rotacionar_e_salvar_imagem(imagem_pil_rotacionada)
 
+def alterar_imagem(id_cliente, nova_imagem_pil):
+    try:
+        conexao = mysql.connector.connect(host="localhost", user="root", password="", database="petshop")
+        cursor = conexao.cursor()
+
+        # Converter a nova imagem para bytes
+        stream = BytesIO()
+        nova_imagem_pil.save(stream, format="JPEG")
+        nova_imagem_bytes = stream.getvalue()
+
+        # Atualizar a imagem do cliente no banco de dados
+        cursor.execute("UPDATE imgCliente SET imagem_cliente = %s WHERE idImg = %s", (nova_imagem_bytes, id_cliente))
+        conexao.commit()
+
+        cursor.close()
+        conexao.close()
+
+        messagebox.showinfo("Informação", "Imagem do cliente alterada com sucesso!")
+
+    except mysql.connector.Error as erro:
+        messagebox.showinfo("Informação", "Erro ao alterar a imagem do cliente:", erro)
+
+def excluir_imagem(id_cliente):
+    try:
+        conexao = mysql.connector.connect(host="localhost", user="root", password="", database="petshop")
+        cursor = conexao.cursor()
+
+        # Excluir a imagem do cliente do banco de dados
+        cursor.execute("UPDATE imgCliente SET imagem_cliente = NULL WHERE idImg = %s", (id_cliente,))
+        conexao.commit()
+
+        cursor.close()
+        conexao.close()
+
+        messagebox.showinfo("Informação", "Imagem do cliente excluída com sucesso!")
+
+    except mysql.connector.Error as erro:
+        messagebox.showinfo("Informação", "Erro ao excluir a imagem do cliente:", erro)
+
 #Banco-----------------------------------------------------------------------------------------------------
 def create():
     codigo = txt_codigo.get()
@@ -319,6 +358,12 @@ btn_escolher.place(x=10, y=200)
 
 btn_rotacao = Button(window, text="Rotacionar imagem", command=btn_rotacao_click, bg="#90EE90")
 btn_rotacao.place(x=10, y=250)
+
+btn_alter = Button(window, text="Alterar imagem", command=alterar_imagem, bg="#90EE90")
+btn_alter.place(x=10, y=300)
+
+btn_delete = Button(window, text="Excluir imagem", command=excluir_imagem, bg="#90EE90")
+btn_delete.place(x=10, y=350)
 
 #Ícones-----------------------------------------------------------------------------------------------------
 
