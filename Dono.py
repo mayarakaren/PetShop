@@ -6,8 +6,10 @@ import tkinter as tk
 import mysql.connector as mysql
 import subprocess
 import mysql.connector
+import cv2
+import numpy as np
 from io import BytesIO
-from tkinter import messagebox
+from tkinter import filedialog, messagebox
 
 #Configuração da window-----------------------------------------------------------------------------------------------------
 
@@ -134,35 +136,65 @@ text_area.place(x=230, y=290)
 
 #Imagem-----------------------------------------------------------------------------------------------------
 
-pasta_inicial = PhotoImage(file = r"")
+def Simples(rotacao_image, angulo):
+    altura, largura = rotacao_image.shape[0], rotacao_image.shape[1]
+    y, x = altura / 2, largura / 2
+    rotacao_matriz = cv2.getRotationMatrix2D((x, y), angulo, 1.0)
+    rotacionando_image = cv2.warpAffine(rotacao_image, rotacao_matriz, (largura, altura))
+    return rotacionando_image
+
+lbl_imagem = None
+imagem_original = None
 
 def escolher_imagem():
+    global lbl_imagem, imagem_original
+    pasta_inicial = PhotoImage(file=r"")
 
     caminho_imagem = filedialog.askopenfilename(initialdir=pasta_inicial, title="Escolha uma imagem",
                                                 filetypes=(("Arquivos de imagem", "*.jpg; *.jpeg; *.png"),
                                                            ("Todos os arquivos", "*.*")))
-    imagem_pil = Image.open(caminho_imagem)
-    largura, altura = imagem_pil.size
+    imagem_original = Image.open(caminho_imagem)
+    largura, altura = imagem_original.size
     if largura > 150:
         proporcao = largura / 150
         nova_altura = int(altura / proporcao)
-        imagem_pil = imagem_pil.resize((110, nova_altura))
-    imagem_tk = ImageTk.PhotoImage(imagem_pil)
-    lbl_imagem = Label(window, image=imagem_tk)
-    lbl_imagem.image= imagem_tk
-    lbl_imagem.place(x=10, y=50)
+        imagem_original = imagem_original.resize((110, nova_altura))
+    imagem_tk = ImageTk.PhotoImage(imagem_original)
+    
+    if lbl_imagem is None:
+        lbl_imagem = Label(window, image=imagem_tk)
+        lbl_imagem.image = imagem_tk
+        lbl_imagem.place(x=10, y=50)
+    else:
+        lbl_imagem.configure(image=imagem_tk)
+        lbl_imagem.image = imagem_tk
 
+def rotacionar_imagem(imagem_pil, angulo):
+    imagem_cv2 = cv2.cvtColor(np.array(imagem_pil), cv2.COLOR_RGB2BGR)
+    imagem_rotacionada = Simples(imagem_cv2, angulo)
+    imagem_pil_rotacionada = Image.fromarray(cv2.cvtColor(imagem_rotacionada, cv2.COLOR_BGR2RGB))
+    return imagem_pil_rotacionada
+
+def salvar_imagem_rotacionada(imagem_pil_rotacionada):
     try:
         conexao = mysql.connector.connect(host="localhost", user="root", password="", database="petshop")
         cursor = conexao.cursor()
 
         # Converter a imagem para bytes
         stream = BytesIO()
-        imagem_pil.save(stream, format="JPEG")
+        imagem_pil_rotacionada.save(stream, format="JPEG")
         imagem_bytes = stream.getvalue()
 
-        # Inserir a imagem na tabela do banco de dados
-        cursor.execute("INSERT INTO imgCliente (imagem_cliente) VALUES (%s)", (imagem_bytes,))
+        # Rotacionar a imagem em 90 graus
+        imagem_rotacionada = rotacionar_imagem(imagem_pil_rotacionada, angulo=180)
+
+        # Converter a imagem rotacionada para bytes
+        stream_rotacionada = BytesIO()
+        imagem_rotacionada.save(stream_rotacionada, format="JPEG")
+        imagem_rotacionada_bytes = stream_rotacionada.getvalue()
+
+        # Inserir a imagem rotacionada na tabela do banco de dados
+        cursor.execute("INSERT INTO imgCliente (imagem_cliente) VALUES (%s)", (imagem_rotacionada_bytes,))
         conexao.commit()
 
         cursor.close()
@@ -170,9 +202,33 @@ def escolher_imagem():
 
         messagebox.showinfo("Informação", "Imagem salva com sucesso no banco de dados!")
 
-
     except mysql.connector.Error as erro:
-         messagebox.showinfo("Informação","Erro ao salvar a imagem no banco de dados:", erro)
+        messagebox.showinfo("Informação", "Erro ao salvar a imagem no banco de dados:", erro)
+
+def rotacionar_e_salvar_imagem(imagem_pil_rotacionada):
+    angulo = 180
+    imagem_rotacionada = rotacionar_imagem(imagem_pil_rotacionada, angulo)
+    salvar_imagem_rotacionada(imagem_rotacionada)
+
+    # Atualizar a imagem no widget lbl_imagem
+    imagem_tk_rotacionada = ImageTk.PhotoImage(imagem_rotacionada)
+    lbl_imagem.configure(image=imagem_tk_rotacionada)
+    lbl_imagem.image = imagem_tk_rotacionada
+
+def btn_rotacao_click():
+    global lbl_imagem, imagem_original
+    pasta_inicial = PhotoImage(file=r"")
+    caminho_imagem = filedialog.askopenfilename(initialdir=pasta_inicial, title="Escolha uma imagem",
+                                                filetypes=(("Arquivos de imagem", "*.jpg; *.jpeg; *.png"),
+                                                           ("Todos os arquivos", "*.*")))
+    imagem_original = Image.open(caminho_imagem)
+    largura, altura = imagem_original.size
+    if largura > 150:
+        proporcao = largura / 150
+        nova_altura = int(altura / proporcao)
+        imagem_original = imagem_original.resize((110, nova_altura))
+    imagem_pil_rotacionada = rotacionar_imagem(imagem_original, angulo=180)
+    rotacionar_e_salvar_imagem(imagem_pil_rotacionada)
 
 #Banco-----------------------------------------------------------------------------------------------------
 def create():
@@ -260,6 +316,9 @@ def abrir_consultaCliente():
 
 btn_escolher = Button(window, text="Escolher imagem", command=escolher_imagem, bg="#90EE90")
 btn_escolher.place(x=10, y=200)
+
+btn_rotacao = Button(window, text="Rotacionar imagem", command=btn_rotacao_click, bg="#90EE90")
+btn_rotacao.place(x=10, y=250)
 
 #Ícones-----------------------------------------------------------------------------------------------------
 
