@@ -3,10 +3,10 @@ import tkinter as tk
 import bcrypt
 import subprocess
 import mysql.connector as mysql
-from tkinter import MessageBox
+from tkinter import messagebox
 
 window = Tk()
-window.title("Sofisticão")
+window.title("Petz")
 
 #-----------------------------------------------------------------------------------------------------
 
@@ -47,16 +47,14 @@ def cadastro():
 
     hash_senha = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
-    if(username == "" or hash_senha == ""):
-        MessageBox.showinfo("Erro", "Há campos em branco")
-        window.destroy()
+    if username == "" or hash_senha == "":
+        messagebox.showinfo("Erro", "Há campos em branco")
     else:
-        conectar = mysql.connect(host= "localhost", user="root", password="", database="petshop")
+        conectar = mysql.connect(host="localhost", user="root", password="", database="petshop")
         cursor = conectar.cursor()
-        cursor.execute("INSERT INTO User VALUES('" + username + "', '" + hash_senha + "')")
-        cursor.execute("commit")
-        MessageBox.showinfo("Mensagem", "Cadastro Realizado com sucesso!")
-        window.destroy()
+        cursor.execute("INSERT INTO User (username, password) VALUES(%s, %s)", (username, hash_senha.decode('utf-8')))
+        conectar.commit()
+        messagebox.showinfo("Mensagem", "Cadastro Realizado com sucesso!")
         conectar.close()
 
 def abrir_principal():
@@ -66,19 +64,21 @@ def login():
     username = txt_user.get()
     password = txt_password.get()
 
-    if username in database:
-        hashed_password = database[username]
+    conectar = mysql.connect(host="localhost", user="root", password="", database="petshop")
+    cursor = conectar.cursor()
+    cursor.execute("SELECT password FROM User WHERE username = %s", (username,))
+    result = cursor.fetchone()
 
-        if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
+    if result:
+        hashed_password = result[0]
+
+        if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
             label_result.config(text="Login realizado com sucesso!")
-            window.destroy() # 
-            abrir_principal()
+            window.after(1000, abrir_principal)
         else:
             label_result.config(text="Senha incorreta!")
-            window.destroy()
     else:
         label_result.config(text="Usuário não encontrado!")
-        window.destroy()
 
 login_button = Button(window, text="Login", bg="#6495ED")
 login_button.place(x=180, y=80)

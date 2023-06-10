@@ -8,7 +8,7 @@ import mysql.connector as mysql
 import subprocess
 import mysql.connector
 from io import BytesIO
-from tkinter import MessageBox
+from tkinter import messagebox
 
 #Configuração da window-----------------------------------------------------------------------------------------------------
 
@@ -48,25 +48,26 @@ def create():
     text_area.delete('1.0', tk.END)
 
     if(codigo == "" or nome == "" or tipo == "" or valor == "" or tempo == "" or desc == ""):
-        MessageBox.showinfo("Erro", "Há campos em branco")
+        messagebox.showinfo("Erro", "Há campos em branco")
         window.destroy()
     else:
         conectar = mysql.connect(host= "localhost", user="root", password="", database="petshop")
         cursor = conectar.cursor()
         cursor.execute("INSERT INTO Servico VALUES('" + codigo + "', '" + nome + "','" + tipo + "', '" + valor + "','" + tempo + "','" + desc + "')")
         cursor.execute("commit")
-        MessageBox.showinfo("Mensagem", "Cadastro Realizado com sucesso!")
+        messagebox.showinfo("Mensagem", "Cadastro Realizado com sucesso!")
         conectar.close()
 
 def delete():
     if(txt_codigo.get() == ""):
-        MessageBox.showinfo("ALERT", "Digite o código para deletar")
+        messagebox.showinfo("ALERT", "Digite o código para deletar")
     else:
-        conectar = mysql.connect(host="localhost", user="root", password="", database="petshop")
+        conectar = mysql.connector.connect(host="localhost", user="root", password="", database="petshop")
+
         cursor = conectar.cursor()
         cursor.execute("DELETE FROM Servico WHERE cod='"+ txt_codigo.get() +"'")
         cursor.execute("commit")
-        MessageBox.showinfo("Mensagem", "Informação Excluída com Sucesso!")
+        messagebox.showinfo("Mensagem", "Informação Excluída com Sucesso!")
         conectar.close()
 
 def update():
@@ -85,14 +86,15 @@ def update():
     text_area.delete('1.0', tk.END)
 
     if(codigo == "" or nome == "" or tipo == "" or valor == "" or tempo == "" or desc == ""):
-        MessageBox.shoinfo("ALERT", "Digite todos os campos para realizar alteração")
+        messagebox.shoinfo("ALERT", "Digite todos os campos para realizar alteração")
     else:
-        conectar = mysql.connect(host="localhost", user="root", password="", database="petshop")
+        conectar = mysql.connector.connect(host="localhost", user="root", password="", database="petshop")
+
         cursor = conectar.cursor()
         cursor.execute("UPDATE Servico SET nome = '"+ nome + "', tipo = '" + tipo + "', valor = '" + valor + "', tempo = '" + tempo + "', descricao = '" + desc + "' WHERE codigo='"+ codigo + "'")
         cursor.execute("commit")
 
-    MessageBox.showinfo("Status", "Atualização feita com sucessão!")
+    messagebox.showinfo("Status", "Atualização feita com sucessão!")
     conectar.close()
 
 def abrir_consultaServico():
@@ -185,10 +187,10 @@ def escolher_imagem():
         cursor.close()
         conexao.close()
 
-        MessageBox("Informação", "Imagem salva com sucesso no banco de dados!")
+        messagebox("Informação", "Imagem salva com sucesso no banco de dados!")
 
     except mysql.connector.Error as erro:
-         MessageBox("Informação","Erro ao salvar a imagem no banco de dados:", erro)
+         messagebox("Informação","Erro ao salvar a imagem no banco de dados:", erro)
 
 #Botões-----------------------------------------------------------------------------------------------------
 

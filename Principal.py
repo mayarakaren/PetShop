@@ -2,7 +2,7 @@ from tkinter import *
 import subprocess
 
 window = Tk()
-window.title("Sofisticão")
+window.title("Petz")
 
 #Configuração da tela-----------------------------------------------------------------------------------------------------
 

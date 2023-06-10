@@ -7,7 +7,7 @@ import mysql.connector as mysql
 import subprocess
 import mysql.connector
 from io import BytesIO
-from tkinter import MessageBox
+from tkinter import messagebox
 
 #Configuração da window-----------------------------------------------------------------------------------------------------
 
@@ -168,10 +168,11 @@ def escolher_imagem():
         cursor.close()
         conexao.close()
 
-        MessageBox("Informação", "Imagem salva com sucesso no banco de dados!")
+        messagebox.showinfo("Informação", "Imagem salva com sucesso no banco de dados!")
+
 
     except mysql.connector.Error as erro:
-         MessageBox("Informação","Erro ao salvar a imagem no banco de dados:", erro)
+         messagebox.showinfo("Informação","Erro ao salvar a imagem no banco de dados:", erro)
 
 #Banco-----------------------------------------------------------------------------------------------------
 def create():
@@ -204,25 +205,25 @@ def create():
     sexo.set("")
 
     if(codigo == "" or nome == "" or idade == "" or sexy == "" or celular == "" or end == "" or cpf == "" or data == ""  or cad == ""  or bairro == ""  or cidade == ""  or estado == ""  or desc == ""):
-        MessageBox.showinfo("Erro", "Há campos em branco")
+        messagebox.showinfo("Erro", "Há campos em branco")
         window.destroy()
     else:
-        conectar = mysql.connect(host= "localhost", user="root", password="", database="petshop")
+        conectar = mysql.connector.connect(host="localhost", user="root", password="", database="petshop")
         cursor = conectar.cursor()
-        cursor.execute("INSERT INTO Clientes VALUES('" + codigo + "', '" + nome + "', '" + idade + "', '" + sexy + "', '" + sexy + "', '" + celular + "', '" + end + "', '" + cpf + "', '" + data + "', '" + cad + "', '" + bairro + "', '" + cidade + "', '" + estado + "', '" + desc + "')")
+        cursor.execute("INSERT INTO Clientes VALUES(cursor.execute('" + str(codigo) + "', '" + nome + "', '" + str(idade) + "', '" + sexy + "', '" + sexy + "', '" + celular + "', '" + end + "', '" + cpf + "', '" + data + "', '" + cad + "', '" + bairro + "', '" + cidade + "', '" + estado + "', '" + desc + "')")
         cursor.execute("commit")
-        MessageBox.showinfo("Mensagem", "Cadastro Realizado com sucesso!")
+        messagebox.showinfo("Mensagem", "Cadastro Realizado com sucesso!")
         conectar.close()
 
 def delete():
     if(txt_codigo.get() == ""):
-        MessageBox.showinfo("ALERT", "Digite o código para deletar")
+        messagebox.showinfo("ALERT", "Digite o código para deletar")
     else:
-        conectar = mysql.connect(host="localhost", user="root", password="", database="petshop")
+        conectar = mysql.connector.connect(host="localhost", user="root", password="", database="petshop")
         cursor = conectar.cursor()
         cursor.execute("DELETE FROM Clientes WHERE cod='"+ txt_codigo.get() +"'")
         cursor.execute("commit")
-        MessageBox.showinfo("Mensagem", "Informação Excluída com Sucesso!")
+        messagebox.showinfo("Mensagem", "Informação Excluída com Sucesso!")
         conectar.close()
 
 def update():
@@ -241,14 +242,16 @@ def update():
     desc = text_area.get()
 
     if(codigo == "" or nome == "" or idade == "" or sexy == "" or celular == "" or end == "" or cpf == "" or data == ""  or cad == ""  or bairro == ""  or cidade == ""  or estado == ""  or desc == ""):
-        MessageBox.shoinfo("ALERT", "Digite todos os campos para realizar alteração")
+        messagebox.shoinfo("ALERT", "Digite todos os campos para realizar alteração")
     else:
-        conectar = mysql.connect(host="localhost", user="root", password="", database="petshop")
+        conectar = mysql.connector.connect(host="localhost", user="root", password="", database="petshop")
         cursor = conectar.cursor()
+        codigo = str(codigo)
+        idade = str(idade)
         cursor.execute("UPDATE Clientes SET nome = '"+ nome + "', idade= '"+ idade + "', sexo= '"+ sexy + "', celular= '"+ celular + "' , endereco= '"+ end + "', cpf= '"+ cpf + "', data= '"+ data + "', cadastro= '"+ cad + "', bairro= '"+ bairro + "', cidade= '"+ cidade + "', estado= '"+ estado + "', descricao= '"+ desc + "' WHERE codigo='"+ codigo + "'")
         cursor.execute("commit")
 
-    MessageBox.showinfo("Status", "Atualização feita com sucessão!")
+    messagebox.showinfo("Status", "Atualização feita com sucessão!")
     conectar.close()
 
 def abrir_consultaCliente():
